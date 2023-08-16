@@ -5,7 +5,7 @@ test: build-image-test
 	@echo "Running tests..."
 	$(eval TEMP_FILE := $(shell mktemp))
 	env > $(TEMP_FILE)
-	docker run -ti --env-file $(TEMP_FILE) --user $$(id --user) --workdir /app  -v $$(pwd):/app $(DOCKER_IMAGE_URL)-test:$(BUILD_VERSION) pytest -vvvv --strict-markers --basetemp=./.pytest_tmp/ --cov-report term-missing --cov=. --cov-fail-under=100 --cov-report=html
+	docker run --interactive --env-file $(TEMP_FILE) --user $$(id --user) --workdir /app  -v $$(pwd):/app $(DOCKER_IMAGE_URL)-test:$(BUILD_VERSION) pytest -vvvv --strict-markers --basetemp=./.pytest_tmp/ --cov-report term-missing --cov=. --cov-fail-under=100 --cov-report=html
 
 build: build-image-app build-image-test
 push: build
