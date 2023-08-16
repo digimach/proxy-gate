@@ -16,3 +16,8 @@ push: build
 clean: docker-clean
 	@echo "Cleaning up..."
 	git clean -d --force -X
+
+integration-test: local-run
+	@echo "Running integration tests..."
+	curl -i -k --resolve auth.localhost:443:127.0.0.1 https://auth.localhost/metaz 
+	curl -i -k --resolve auth.localhost:443:127.0.0.1 https://auth.localhost/healthz
