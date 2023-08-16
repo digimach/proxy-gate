@@ -1,7 +1,7 @@
 include makefiles/*.mk
-.PHONY: test build push run 
+.PHONY: pytest build push run 
 
-test: build-image-test
+pytest: build-image-test
 	@echo "Running tests..."
 	$(eval TEMP_FILE := $(shell mktemp))
 	env > $(TEMP_FILE)
