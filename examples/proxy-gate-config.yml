@@ -1,1 +1,6 @@
----
+allowed_auth_methods:
+- google
+- plex
+app_name: Proxy Gate
+secret_key_interim_validity: 7d
+secret_key_validity: 3d
