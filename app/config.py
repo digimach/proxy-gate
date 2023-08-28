@@ -97,8 +97,34 @@ class ConfigHandler:
 
         return int(time_string)
 
+    @staticmethod
+    def field_mapper(data: dict, field_mappings: list):
+        for field_mapping in field_mappings:
+            properties = field_mapping["properties"]
+            mapping_func = field_mapping["mapper"]
 
-class Config:
+            for _property in properties:
+                keys = _property.split(".")
+                current = data
+                for key in keys[:-1]:
+                    current = current.get(key, {})
+                if keys[-1] in current:
+                    current[keys[-1]] = mapping_func(current[keys[-1]])
+
+    @staticmethod
+    def time_duration_to_seconds_in_dict(data: dict, properties: list):
+        for _property in properties:
+            keys = _property.split(".")
+            current = data
+            for key in keys[:-1]:
+                current = current.get(key, {})
+            if keys[-1] in current:
+                current[keys[-1]] = ConfigHandler.time_duration_to_seconds(
+                    current[keys[-1]]
+                )
+
+
+class LoadConfig:
     """
     Provides an interface to configuration handling in order of precedence:
     1. Environment variables
@@ -112,8 +138,9 @@ class Config:
         config_dirs,
         env_prefix,
         schema_name=None,
+        field_mappings: list = None,
     ):
-        self.config = {}
+        config = {}
         if schema_name:
             schema = load_json(get_schema_file_path(schema_name))
         else:
@@ -126,9 +153,25 @@ class Config:
         ConfigHandler.validate_config(
             env_config, file_config, default_config, schema_name
         )
-        self.config.update(default_config)
-        self.config.update(file_config)
-        self.config.update(env_config)
+        config.update(default_config)
+        config.update(file_config)
+        config.update(env_config)
+        if field_mappings:
+            ConfigHandler.field_mapper(config, field_mappings)
+        self._config = config
+
+    @property
+    def config(self):
+        return self._config
+
+    # def __setattr__(self, name, value):
+    #     if hasattr(self, name):
+    #         raise AttributeError(f"Attribute '{name}' is read-only")
+    #     elif name == "_config":
+    #         super().__setattr__(name, value)
+    #     raise AttributeError(
+    #         f"Attribute '{name}' cannot be set as this is a readonly object"
+    #     )
 
     def get(self, key):
         return self.config.get(key)
@@ -136,24 +179,29 @@ class Config:
     __call__ = get
 
 
-class ProxyGateConfig(Config, metaclass=ConfigSingletonMeta):
+class LoadProxyGateConfig(LoadConfig, metaclass=ConfigSingletonMeta):
     def __init__(self):
         config_dirs = (
             [os.environ.get("PROXY_GATE_CONFIG_DIR")]
             if os.environ.get("PROXY_GATE_CONFIG_DIR")
             else []
         )
+        field_mappings = [
+            {
+                "properties": [
+                    "secret_key_validity",
+                    "secret_key_interim_validity",
+                ],
+                "mapper": ConfigHandler.time_duration_to_seconds,
+            }
+        ]
         super().__init__(
             "proxy-gate-config.yaml",
             config_dirs,
             "PROXY_GATE",
             "proxy-gate-config",
+            field_mappings,
         )
-
-        for _key in ["secret_key_validity", "secret_key_interim_validity"]:
-            self.config[_key] = ConfigHandler.time_duration_to_seconds(
-                self.config[_key]
-            )
 
 
 def load_json(json_file: Path):

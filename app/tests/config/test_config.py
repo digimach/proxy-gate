@@ -6,7 +6,7 @@ import json
 import pytest
 import yaml
 
-from app.config import Config, ConfigHandler
+from app.config import LoadConfig, ConfigHandler
 
 
 class TestConfig:
@@ -35,7 +35,7 @@ class TestConfig:
         monkeypatch.setattr(
             ConfigHandler, "load_from_defaults", lambda *args: {}, raising=True
         )
-        config = Config(
+        config = LoadConfig(
             config_file_name="test-app-config.yaml",
             config_dirs=mock_config_files,
             env_prefix="TESTAPP",
