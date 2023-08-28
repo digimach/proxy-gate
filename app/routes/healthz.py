@@ -1,9 +1,11 @@
 from flask import Blueprint
+from flask_restx import Api, Resource
 
 blueprint = Blueprint(__name__.replace(".", "_"), __name__)
+api = Api(blueprint)
 
 
-@blueprint.route("")
-@blueprint.route("/")
-def index():
-    return "OK", 200
+@api.route("")
+class Healthz(Resource):
+    def get(self):
+        return "OK", 200
