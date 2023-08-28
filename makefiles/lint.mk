@@ -1,6 +1,6 @@
 .PHONY: lint lint-flake8 lint-pylint lint-black black
 
-lint : lint lint-flake8 lint-pylint lint-black black
+lint : lint-flake8 lint-pylint lint-black
 
 lint-flake8 :
 	flake8 --count --statistics app/ *.py
