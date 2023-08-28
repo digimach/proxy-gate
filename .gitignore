@@ -1,8 +1,9 @@
 *.pyc
+.pytest_cache
 /.coverage
+/.pytest_tmp/
 /examples/runtime*
 /htmlcov/
 /venv/
 __pycache__
-.pytest_cache
-/.pytest_tmp/
+coverage.xml
