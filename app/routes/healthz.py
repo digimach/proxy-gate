@@ -1,8 +1,8 @@
-from flask import Blueprint
-from flask_restx import Api, Resource
+from flask_restx import Namespace, Resource
 
-blueprint = Blueprint(__name__.replace(".", "_"), __name__)
-api = Api(blueprint)
+api = Namespace(
+    "Healthz", description="Application health realated endpoints"
+)
 
 
 @api.route("")

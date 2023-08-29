@@ -1,20 +1,20 @@
-import os
+from flask import url_for
+from flask_restx import Namespace, Resource
 
-from flask import Blueprint, url_for
-from flask_restx import Api, Resource
+from ..config import LoadProxyGateConfig
 
-blueprint = Blueprint(__name__.replace(".", "_"), __name__)
-api = Api(blueprint)
+api = Namespace("Metaz", description="Application metadata endpoints")
 
 
 @api.route("")
 class Metaz(Resource):
     def get(self):
+        print(LoadProxyGateConfig().config)
         meta = {
-            "version": os.environ["PROXY_GATE_VERSION"],
-            "app_name": "Proxy Gate",
+            "version": LoadProxyGateConfig()("app_version"),
+            "app_name": LoadProxyGateConfig()("app_name"),
             "google_auth": {
-                "client_id": "",
+                "client_id": "621835299065-l26di2j94qnpfa20385uv08bq03gbk6j.apps.googleusercontent.com",
                 "session_endpoint": url_for("app_routes_auth_google.get_session"),
             },
             "plex_auth": {
