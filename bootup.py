@@ -10,13 +10,8 @@ from pathlib import Path
 from flask_migrate import Migrate, init, migrate, upgrade
 from sqlalchemy import and_
 
-from app.config import ProxyGateConfig
-
-# from app.exceptions import GoogleClientSecretFileNotFound
-from app.models import db, RunTime, SecretKey
-
-# from app.utils import google_oauth_flow
-from wsgi import app
+from app.config import LoadProxyGateConfig
+from app.models import RunTime, SecretKey, db
 
 
 def secret_key_setup():
@@ -27,8 +22,8 @@ def secret_key_setup():
     """
 
     print("** Setup secret key")
-    key_validity = ProxyGateConfig()("secret_key_validity")
-    key_interim_validity = ProxyGateConfig()("secret_key_interim_validity")
+    key_validity = LoadProxyGateConfig()("secret_key_validity")
+    key_interim_validity = LoadProxyGateConfig()("secret_key_interim_validity")
     active_keys = SecretKey.query.filter(SecretKey.active).all()
 
     if len(active_keys) == 0:
@@ -132,6 +127,9 @@ def main():
     print("** Booting up")
     dir_setup()
     config_file_setup()
+
+    from wsgi import app
+
     print("** Running migrations")
     migrate_engine = Migrate()
 

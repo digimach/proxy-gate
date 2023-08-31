@@ -5,6 +5,7 @@
         "ms-python.isort",
         "ms-python.python",
         "ms-vscode.live-server",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "ms-python.pylint"
     ]
 }

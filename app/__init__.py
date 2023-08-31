@@ -4,11 +4,14 @@ import os
 import pkgutil
 from pathlib import Path
 
+import flask_restx
 import yaml
 from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
-from .models import db, SecretKey
+
+from .config import LoadProxyGateConfig
+from .models import SecretKey, db
 
 csrf = CSRFProtect()
 
@@ -18,10 +21,11 @@ def init_app():
     app = Flask(__name__, instance_relative_config=False)
 
     with app.app_context():
+        api = init_api(app)
         load_user_config(app)
         database_setup(app)
 
-        add_routes(app)
+        add_routes(app, api)
         app.secret_key = get_session_secret_keys()
         csrf.init_app(app)
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
@@ -29,25 +33,24 @@ def init_app():
         return app
 
 
-def add_routes(app):
+def add_routes(app, api):
     routes = get_routes()
 
     for route in routes:
         route_url_prefix = "/" + "/".join(route.split("."))
         route_module = importlib.import_module("." + route, package="app.routes")
         if hasattr(route_module, "blueprint"):
-            print(f"Registering {route_url_prefix} at {route}")
+            print(f"Registering blueprint in {route} at {route_url_prefix}")
             app.register_blueprint(
                 getattr(route_module, "blueprint"), url_prefix="/" + route_url_prefix
             )
+        elif hasattr(route_module, "ns"):
+            print(f"Registering api in {route} at {route_url_prefix}")
+            api.add_namespace(getattr(route_module, "ns"), path=route_url_prefix)
         else:
             print(
-                f"Skipping {route_url_prefix} at app.routes.{route} as it does not have a blueprint"
+                f"Skipping {route_url_prefix} at app.routes.{route} as it does not have a blueprint or namespace"
             )
-
-    # app.register_blueprint(google.googleauth, url_prefix="/googleauth")
-    # app.register_blueprint(login.login, url_prefix="/login")
-    # app.register_blueprint(metaz.metaz, url_prefix="/metaz")
 
 
 def load_user_config(app):
@@ -106,8 +109,20 @@ def walk_packages(path: Path, prefix: str = ""):
     for loader, name, is_pkg in pkgutil.walk_packages([path], prefix=prefix):
         if is_pkg:
             print(f"Found package {name} at {loader.path} (will recurse)")
+            modules.append(name)
             modules += walk_packages(loader.path + "/" + name, name + ".")
         else:
             modules.append(name)
 
     return modules
+
+
+def init_api(app):
+    api = flask_restx.Api(
+        version=LoadProxyGateConfig()("app_version"),
+        title=LoadProxyGateConfig()("app_name"),
+        description="Authentication and authorization for applications served by a proxy",
+        # All API metadatas
+    )
+    api.init_app(app)
+    return api

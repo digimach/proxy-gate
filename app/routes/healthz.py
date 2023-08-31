@@ -1,9 +1,24 @@
-from flask import Blueprint
+from flask_restx import Namespace, Resource, fields
 
-blueprint = Blueprint(__name__.replace(".", "_"), __name__)
+ns = Namespace("Healthz", description="Application health realated endpoints")
 
 
-@blueprint.route("")
-@blueprint.route("/")
-def index():
-    return "OK", 200
+class Models:
+    Healthz = ns.model(
+        "Healthz",
+        {
+            "status": fields.String(
+                example="healthy",
+                description="Overall application health status",
+                enum=["healthy", "error"],
+            ),
+        },
+        strict=True,
+    )
+
+
+@ns.route("")
+class Healthz(Resource):
+    @ns.marshal_with(Models.Healthz, description="Application health status")
+    def get(self):
+        return {"status": "healthy"}, 200

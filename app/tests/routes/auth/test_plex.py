@@ -123,13 +123,13 @@ def test_session_fail(app, metaz):
         f"{session_endpoint}?plexAuthToken={plex_auth_token}&plexClientId=33"
     )
     assert response.status_code == 400
-    assert response.text == "invalid token"
+    assert response.text == '"invalid token"\n'
 
     assert len(client.cookie_jar) == 0
 
     response = client.get(session_endpoint)
     assert response.status_code == 400
-    assert response.text == "invalid request"
+    assert response.text == '"invalid request"\n'
 
 
 def test_logout(app):
