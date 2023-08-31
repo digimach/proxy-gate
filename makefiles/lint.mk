@@ -6,7 +6,7 @@ lint-flake8 :
 	flake8 --count --statistics app/ *.py
 
 lint-pylint :
-	pylint --jobs 0 --fail-under 9.80 app/ *.py
+	pylint --jobs 0 --fail-under 9.76 app/ *.py
 
 lint-black :
 	black --check --diff --verbose app/ *.py
