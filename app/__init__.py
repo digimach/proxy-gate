@@ -44,12 +44,12 @@ def add_routes(app, api):
             app.register_blueprint(
                 getattr(route_module, "blueprint"), url_prefix="/" + route_url_prefix
             )
-        elif hasattr(route_module, "api"):
+        elif hasattr(route_module, "ns"):
             print(f"Registering api in {route} at {route_url_prefix}")
-            api.add_namespace(getattr(route_module, "api"), path=route_url_prefix)
+            api.add_namespace(getattr(route_module, "ns"), path=route_url_prefix)
         else:
             print(
-                f"Skipping {route_url_prefix} at app.routes.{route} as it does not have a blueprint or api"
+                f"Skipping {route_url_prefix} at app.routes.{route} as it does not have a blueprint or namespace"
             )
 
 
@@ -109,6 +109,7 @@ def walk_packages(path: Path, prefix: str = ""):
     for loader, name, is_pkg in pkgutil.walk_packages([path], prefix=prefix):
         if is_pkg:
             print(f"Found package {name} at {loader.path} (will recurse)")
+            modules.append(name)
             modules += walk_packages(loader.path + "/" + name, name + ".")
         else:
             modules.append(name)
