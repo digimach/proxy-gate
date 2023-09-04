@@ -1,6 +1,7 @@
 Flask-Migrate
 Flask-WTF
 flask
+flask-jwt-extended[asymmetric_crypto]
 flask-restx
 flask_sqlalchemy
 gunicorn

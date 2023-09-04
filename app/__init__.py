@@ -7,6 +7,7 @@ from pathlib import Path
 import flask_restx
 import yaml
 from flask import Flask
+from flask_jwt_extended import JWTManager
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -29,6 +30,8 @@ def init_app():
         app.secret_key = get_session_secret_keys()
         csrf.init_app(app)
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
+        JWTManager(app)
+
         add_healthz_routes()
         return app
 
